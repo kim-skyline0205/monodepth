@@ -34,9 +34,9 @@ def _sample(im, x_offset, _height, _width, _num_channels, _height_f, _width_f):
 
 baseline = 22.
 dataset = "KITTI"
-img_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_rignt_image_list.txt".format(dataset))
-disp_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_left_disparity_list.txt".format(dataset))
-save_dir = "/home/keti/Desktop/monodepth/result_reconstruction_image/cityscapes_kitti_resnet50/kitti_2015_stereo/left_reconstuction_result/".format(dataset)
+img_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_left_image_list.txt".format(dataset))
+disp_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_stereo_mode_vgg_left_disparity_list.txt".format(dataset))
+save_dir = "/home/keti/Desktop/monodepth/result_reconstruction_image/kitti_stereo_vgg/kitti_2015_stereo/right_reconstuction_result/".format(dataset)
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 #train_filename = "/home/cvlab/data/{}/train.txt".format(dataset)
@@ -56,7 +56,7 @@ elif dataset == "KITTI":
 i = 0
 for img_path, disp_path in zip(*file_list):
     x_offset = cv2.imread(disp_path.rstrip(), cv2.IMREAD_ANYDEPTH)
-
+    print(disp_path.rstrip())
     if dataset == "NYU":
         x_offset = x_offset / 255. * 10
         x_offset = scaler * 582.6 / x_offset

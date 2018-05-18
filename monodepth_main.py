@@ -50,6 +50,7 @@ parser.add_argument('--log_directory',             type=str,   help='directory t
 parser.add_argument('--checkpoint_path',           type=str,   help='path to a specific checkpoint to load', default='')
 parser.add_argument('--retrain',                               help='if used with checkpoint_path, will restart training from step zero', action='store_true')
 parser.add_argument('--full_summary',                          help='if set, will keep more data for each summary. Warning: the file can become very large', action='store_true')
+parser.add_argument('--loss_npy_directory',        type=str,   help='loss_npy_output directory, if empty outputs to loss_npy_output folder', default='')
 
 args = parser.parse_args()
 
@@ -110,6 +111,9 @@ def train(params):
                     model = MonodepthModel(params, args.mode, left_splits[i], right_splits[i], reuse_variables, i)
 
                     loss = model.total_loss
+                    loss_image_left = model.debug_left_loss
+                    loss_image_right = model.debug_right_loss
+
                     tower_losses.append(loss)
 
                     reuse_variables = True
@@ -158,9 +162,10 @@ def train(params):
         # GO!
         start_step = global_step.eval(session=sess)
         start_time = time.time()
+        cnt = 0
         for step in range(start_step, num_total_steps):
             before_op_time = time.time()
-            _, loss_value = sess.run([apply_gradient_op, total_loss])
+            _, loss_value,loss_image_left_print,loss_image_right_print = sess.run([apply_gradient_op, total_loss,loss_image_left,loss_image_right])
             duration = time.time() - before_op_time
             if step and step % 100 == 0:
                 examples_per_sec = params.batch_size / duration
@@ -170,8 +175,60 @@ def train(params):
                 print(print_string.format(step, examples_per_sec, loss_value, time_sofar, training_time_left))
                 summary_str = sess.run(summary_op)
                 summary_writer.add_summary(summary_str, global_step=step)
-            if step and step % 10000 == 0:
+
+            if step and step % 10 == 0:
                 train_saver.save(sess, args.log_directory + '/' + args.model_name + '/model', global_step=step)
+                loss_image_left_0 = np.zeros((params.batch_size, loss_image_left_print[0].shape[1], loss_image_left_print[0].shape[2],3), dtype=np.float32)
+                loss_image_left_1 = np.zeros((params.batch_size, loss_image_left_print[1].shape[1], loss_image_left_print[1].shape[2],3), dtype=np.float32)
+                loss_image_left_2 = np.zeros((params.batch_size, loss_image_left_print[2].shape[1], loss_image_left_print[2].shape[2],3), dtype=np.float32)
+                loss_image_left_3 = np.zeros((params.batch_size, loss_image_left_print[3].shape[1], loss_image_left_print[3].shape[2],3), dtype=np.float32)
+                for i,l in enumerate(loss_image_left_print[0]):
+                    #print("loss_image_left_print0: {}".format(l.shape))
+                    loss_image_left_0[i] = l.squeeze()
+               # print("path {}".format(loss_npy_directory +'0'))
+                np.save(params.loss_npy_directory +'/left/0'+ '/disparities0_{}.npy'.format(cnt),loss_image_left_0)
+         
+                for i,l in enumerate(loss_image_left_print[1]):
+                    #print("loss_image_left_print1: {}".format(l.shape))
+                    loss_image_left_1[i] = l.squeeze()
+                np.save(params.loss_npy_directory +'/left/1'+ '/disparities1_{}.npy'.format(cnt),loss_image_left_1)
+
+                for i,l in enumerate(loss_image_left_print[2]):
+                    #print("loss_image_left_print2: {}".format(l.shape))
+                    loss_image_left_2[i] = l.squeeze()
+                np.save(params.loss_npy_directory +'/left/2'+ '/disparities2_{}.npy'.format(cnt),loss_image_left_2)
+
+                for i,l in enumerate(loss_image_left_print[3]):
+                    #print("loss_image_left_print3: {}".format(l.shape))
+                    loss_image_left_3[i] = l.squeeze()
+                np.save(params.loss_npy_directory +'/left/3'+ '/disparities3_{}.npy'.format(cnt),loss_image_left_3)    
+
+                loss_image_right_0 = np.zeros((params.batch_size, loss_image_right_print[0].shape[1], loss_image_right_print[0].shape[2],3), dtype=np.float32)
+                loss_image_right_1 = np.zeros((params.batch_size, loss_image_right_print[1].shape[1], loss_image_right_print[1].shape[2],3), dtype=np.float32)
+                loss_image_right_2 = np.zeros((params.batch_size, loss_image_right_print[2].shape[1], loss_image_right_print[2].shape[2],3), dtype=np.float32)
+                loss_image_right_3 = np.zeros((params.batch_size, loss_image_right_print[3].shape[1], loss_image_right_print[3].shape[2],3), dtype=np.float32)
+                for i,l in enumerate(loss_image_right_print[0]):
+                    #print("loss_image_left_print0: {}".format(l.shape))
+                    loss_image_right_0[i] = l.squeeze()
+               # print("path {}".format(loss_npy_directory +'0'))
+                np.save(params.loss_npy_directory +'/right/0'+ '/disparities0_{}.npy'.format(cnt),loss_image_right_0)
+         
+                for i,l in enumerate(loss_image_right_print[1]):
+                    #print("loss_image_left_print1: {}".format(l.shape))
+                    loss_image_right_1[i] = l.squeeze()
+                np.save(params.loss_npy_directory +'/right/1'+ '/disparities1_{}.npy'.format(cnt),loss_image_right_1)
+
+                for i,l in enumerate(loss_image_right_print[2]):
+                    #print("loss_image_right_print2: {}".format(l.shape))
+                    loss_image_right_2[i] = l.squeeze()
+                np.save(params.loss_npy_directory +'/right/2'+ '/disparities2_{}.npy'.format(cnt),loss_image_right_2)
+
+                for i,l in enumerate(loss_image_right_print[3]):
+                    #print("loss_image_right_print3: {}".format(l.shape))
+                    loss_image_right_3[i] = l.squeeze()
+                np.save(params.loss_npy_directory +'/right/3'+ '/disparities3_{}.npy'.format(cnt),loss_image_right_3)      
+  
+                cnt+=1
 
         train_saver.save(sess, args.log_directory + '/' + args.model_name + '/model', global_step=num_total_steps)
 
@@ -241,7 +298,8 @@ def main(_):
         alpha_image_loss=args.alpha_image_loss,
         disp_gradient_loss_weight=args.disp_gradient_loss_weight,
         lr_loss_weight=args.lr_loss_weight,
-        full_summary=args.full_summary)
+        full_summary=args.full_summary,
+        loss_npy_directory=args.loss_npy_directory)
 
     if args.mode == 'train':
         train(params)

@@ -1,1 +1,4 @@
-python3 generation.py --npy_path /home/keti/Desktop/monodepth/result_npy/cityscapes_kitti_resnet50/kitti_2015_stereo/disparities_pp.npy --save_path /home/keti/Desktop/monodepth/result_generation/cityscapes_kitti_resnet50/kitti_2015_stereo/PP_left_result/ --width 1242 --height 375
+python3 generation.py --npy_path /home/keti/Desktop/monodepth/result_npy/cityscapes_kitti_resnet50/kitti_2015_stereo/disparities.npy --save_path /home/keti/Desktop/monodepth/result_generation/cityscapes_kitti_resnet50/kitti_2015_stereo/left_result/ --width 1242 --height 375
+
+
+python3 loss_npy2img.py --npy_path /home/keti/Desktop/monodepth/result_loss_npy/disparities_100.npy --save_path /home/keti/Desktop/monodepth/result_loss_image/ --width 512 --height 256

@@ -19,6 +19,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
+import functions
 from bilinear_sampler import *
 
 monodepth_parameters = namedtuple('parameters', 
@@ -33,7 +34,8 @@ monodepth_parameters = namedtuple('parameters',
                         'alpha_image_loss, '
                         'disp_gradient_loss_weight, '
                         'lr_loss_weight, '
-                        'full_summary')
+                        'full_summary,'
+                        'loss_npy_directory')
 
 class MonodepthModel(object):
     """monodepth model"""
@@ -335,34 +337,47 @@ class MonodepthModel(object):
         with tf.variable_scope('losses', reuse=self.reuse_variables):
             # IMAGE RECONSTRUCTION
             # L1
-            self.l1_left = [tf.abs( self.left_est[i] - self.left_pyramid[i]) for i in range(4)]
+            self.l1_left = [tf.abs( self.left_est[i] - self.left_pyramid[i]) for i in range(4)]      
             self.l1_reconstruction_loss_left  = [tf.reduce_mean(l) for l in self.l1_left]
             self.l1_right = [tf.abs(self.right_est[i] - self.right_pyramid[i]) for i in range(4)]
             self.l1_reconstruction_loss_right = [tf.reduce_mean(l) for l in self.l1_right]
-
+            
             # SSIM
             self.ssim_left = [self.SSIM( self.left_est[i],  self.left_pyramid[i]) for i in range(4)]
             self.ssim_loss_left  = [tf.reduce_mean(s) for s in self.ssim_left]
             self.ssim_right = [self.SSIM(self.right_est[i], self.right_pyramid[i]) for i in range(4)]
             self.ssim_loss_right = [tf.reduce_mean(s) for s in self.ssim_right]
-
+            
             # WEIGTHED SUM
             self.image_loss_right = [self.params.alpha_image_loss * self.ssim_loss_right[i] + (1 - self.params.alpha_image_loss) * self.l1_reconstruction_loss_right[i] for i in range(4)]
             self.image_loss_left  = [self.params.alpha_image_loss * self.ssim_loss_left[i]  + (1 - self.params.alpha_image_loss) * self.l1_reconstruction_loss_left[i]  for i in range(4)]
             self.image_loss = tf.add_n(self.image_loss_left + self.image_loss_right)
-
+            
             # DISPARITY SMOOTHNESS
             self.disp_left_loss  = [tf.reduce_mean(tf.abs(self.disp_left_smoothness[i]))  / 2 ** i for i in range(4)]
             self.disp_right_loss = [tf.reduce_mean(tf.abs(self.disp_right_smoothness[i])) / 2 ** i for i in range(4)]
             self.disp_gradient_loss = tf.add_n(self.disp_left_loss + self.disp_right_loss)
-
+            
             # LR CONSISTENCY
             self.lr_left_loss  = [tf.reduce_mean(tf.abs(self.right_to_left_disp[i] - self.disp_left_est[i]))  for i in range(4)]
             self.lr_right_loss = [tf.reduce_mean(tf.abs(self.left_to_right_disp[i] - self.disp_right_est[i])) for i in range(4)]
             self.lr_loss = tf.add_n(self.lr_left_loss + self.lr_right_loss)
+            
+	    #LOSS_IMAGE_DEBUG
+            self.debug_recon_left = [tf.abs( self.left_est[i] - self.left_pyramid[i]) for i in range(4)]
+            self.debug_recon_left_image=[(1 - self.params.alpha_image_loss) *l for l in self.debug_recon_left]
+            self.debug_recon_right = [tf.abs(self.right_est[i] - self.right_pyramid[i]) for i in range(4)]      
+            self.debug_recon_right_image=[(1 - self.params.alpha_image_loss) *l for l in self.debug_recon_right]
 
+            self.debug_ssim_left = [self.SSIM( self.left_est[i],  self.left_pyramid[i]) for i in range(4)]
+            self.debug_ssim_left_image=[(self.params.alpha_image_loss) *l for l in self.debug_ssim_left]
+            self.debug_ssim_right = [self.SSIM(self.right_est[i], self.right_pyramid[i]) for i in range(4)]
+            self.debug_ssim_right_image=[(self.params.alpha_image_loss) *l for l in self.debug_ssim_right]
+
+            self.debug_left_loss = self.debug_recon_left_image +self.debug_recon_right_image
+            self.debug_right_loss = self.debug_ssim_left_image +self.debug_ssim_right_image
             # TOTAL LOSS
-            self.total_loss = self.image_loss + self.params.disp_gradient_loss_weight * self.disp_gradient_loss + self.params.lr_loss_weight * self.lr_loss
+            self.total_loss = self.image_loss + self.params.disp_gradient_loss_weight * self.disp_gradient_loss + self.params.lr_loss_weight * self.lr_loss 
 
     def build_summaries(self):
         # SUMMARIES

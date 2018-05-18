@@ -11,9 +11,9 @@ fw.close()
 #
 #
 #A=random.sample(range(200),200)
-fw = open('kitti_stereo_test_left_disparity_list.txt','a')
+fw = open('kitti_stereo_test_vgg_left_disparity_list.txt','a')
 for r in range(200):
    # i = str(A[r]).zfill(4)
     i = str(r)
-    fw.write('/home/keti/Desktop/monodepth/result_generation/cityscapes_kitti_resnet50/kitti_2015_stereo/PP_left_result/'+i+'.png''\n')
+    fw.write('/home/keti/Desktop/monodepth/result_generation/cityscapes_kitti_vgg/kitti_2015_stereo/PP_left_result/'+i+'.png''\n')
 fw.close()
