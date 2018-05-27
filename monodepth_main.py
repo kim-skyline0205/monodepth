@@ -20,7 +20,8 @@ import time
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from monodepth_model import *
+#from monodepth_model import *
+from monodepth_hw_model import *
 from monodepth_dataloader import *
 from average_gradients import *
 
@@ -35,7 +36,7 @@ parser.add_argument('--filenames_file',            type=str,   help='path to the
 parser.add_argument('--input_height',              type=int,   help='input height', default=256)
 parser.add_argument('--input_width',               type=int,   help='input width', default=512)
 parser.add_argument('--batch_size',                type=int,   help='batch size', default=8)
-parser.add_argument('--num_epochs',                type=int,   help='number of epochs', default=50)
+parser.add_argument('--num_epochs',                type=int,   help='number of epochs', default=100)
 parser.add_argument('--learning_rate',             type=float, help='initial learning rate', default=1e-4)
 parser.add_argument('--lr_loss_weight',            type=float, help='left-right consistency weight', default=1.0)
 parser.add_argument('--alpha_image_loss',          type=float, help='weight between SSIM and L1 in the image loss', default=0.85)
@@ -63,6 +64,7 @@ def post_process_disparity(disp):
     l_mask = 1.0 - np.clip(20 * (l - 0.05), 0, 1)
     r_mask = np.fliplr(l_mask)
     return r_mask * l_disp + l_mask * r_disp + (1.0 - l_mask - r_mask) * m_disp
+    #return l_disp
 
 def count_text_lines(file_path):
     f = open(file_path, 'r')
@@ -176,7 +178,7 @@ def train(params):
                 summary_str = sess.run(summary_op)
                 summary_writer.add_summary(summary_str, global_step=step)
 
-            if step and step % 10 == 0:
+            if step and step % 10000 == 0:
                 train_saver.save(sess, args.log_directory + '/' + args.model_name + '/model', global_step=step)
                 loss_image_left_0 = np.zeros((params.batch_size, loss_image_left_print[0].shape[1], loss_image_left_print[0].shape[2],3), dtype=np.float32)
                 loss_image_left_1 = np.zeros((params.batch_size, loss_image_left_print[1].shape[1], loss_image_left_print[1].shape[2],3), dtype=np.float32)
@@ -186,22 +188,22 @@ def train(params):
                     #print("loss_image_left_print0: {}".format(l.shape))
                     loss_image_left_0[i] = l.squeeze()
                # print("path {}".format(loss_npy_directory +'0'))
-                np.save(params.loss_npy_directory +'/left/0'+ '/disparities0_{}.npy'.format(cnt),loss_image_left_0)
+                np.save(params.loss_npy_directory +'left/0'+ '/disparities0_{}.npy'.format(cnt),loss_image_left_0)
          
                 for i,l in enumerate(loss_image_left_print[1]):
                     #print("loss_image_left_print1: {}".format(l.shape))
                     loss_image_left_1[i] = l.squeeze()
-                np.save(params.loss_npy_directory +'/left/1'+ '/disparities1_{}.npy'.format(cnt),loss_image_left_1)
+                np.save(params.loss_npy_directory +'left/1'+ '/disparities1_{}.npy'.format(cnt),loss_image_left_1)
 
                 for i,l in enumerate(loss_image_left_print[2]):
                     #print("loss_image_left_print2: {}".format(l.shape))
                     loss_image_left_2[i] = l.squeeze()
-                np.save(params.loss_npy_directory +'/left/2'+ '/disparities2_{}.npy'.format(cnt),loss_image_left_2)
+                np.save(params.loss_npy_directory +'left/2'+ '/disparities2_{}.npy'.format(cnt),loss_image_left_2)
 
                 for i,l in enumerate(loss_image_left_print[3]):
                     #print("loss_image_left_print3: {}".format(l.shape))
                     loss_image_left_3[i] = l.squeeze()
-                np.save(params.loss_npy_directory +'/left/3'+ '/disparities3_{}.npy'.format(cnt),loss_image_left_3)    
+                np.save(params.loss_npy_directory +'left/3'+ '/disparities3_{}.npy'.format(cnt),loss_image_left_3)    
 
                 loss_image_right_0 = np.zeros((params.batch_size, loss_image_right_print[0].shape[1], loss_image_right_print[0].shape[2],3), dtype=np.float32)
                 loss_image_right_1 = np.zeros((params.batch_size, loss_image_right_print[1].shape[1], loss_image_right_print[1].shape[2],3), dtype=np.float32)
@@ -211,22 +213,22 @@ def train(params):
                     #print("loss_image_left_print0: {}".format(l.shape))
                     loss_image_right_0[i] = l.squeeze()
                # print("path {}".format(loss_npy_directory +'0'))
-                np.save(params.loss_npy_directory +'/right/0'+ '/disparities0_{}.npy'.format(cnt),loss_image_right_0)
+                np.save(params.loss_npy_directory +'right/0'+ '/disparities0_{}.npy'.format(cnt),loss_image_right_0)
          
                 for i,l in enumerate(loss_image_right_print[1]):
                     #print("loss_image_left_print1: {}".format(l.shape))
                     loss_image_right_1[i] = l.squeeze()
-                np.save(params.loss_npy_directory +'/right/1'+ '/disparities1_{}.npy'.format(cnt),loss_image_right_1)
+                np.save(params.loss_npy_directory +'right/1'+ '/disparities1_{}.npy'.format(cnt),loss_image_right_1)
 
                 for i,l in enumerate(loss_image_right_print[2]):
                     #print("loss_image_right_print2: {}".format(l.shape))
                     loss_image_right_2[i] = l.squeeze()
-                np.save(params.loss_npy_directory +'/right/2'+ '/disparities2_{}.npy'.format(cnt),loss_image_right_2)
+                np.save(params.loss_npy_directory +'right/2'+ '/disparities2_{}.npy'.format(cnt),loss_image_right_2)
 
                 for i,l in enumerate(loss_image_right_print[3]):
                     #print("loss_image_right_print3: {}".format(l.shape))
                     loss_image_right_3[i] = l.squeeze()
-                np.save(params.loss_npy_directory +'/right/3'+ '/disparities3_{}.npy'.format(cnt),loss_image_right_3)      
+                np.save(params.loss_npy_directory +'right/3'+ '/disparities3_{}.npy'.format(cnt),loss_image_right_3)      
   
                 cnt+=1
 
@@ -264,24 +266,49 @@ def test(params):
     num_test_samples = count_text_lines(args.filenames_file)
 
     print('now testing {} files'.format(num_test_samples))
-    disparities    = np.zeros((num_test_samples, params.height, params.width), dtype=np.float32)
-    disparities_pp = np.zeros((num_test_samples, params.height, params.width), dtype=np.float32)
+    disparities    = np.zeros((1, params.height, params.width), dtype=np.float32)
+    disparities_pp = np.zeros((1, params.height, params.width), dtype=np.float32)
+	
+    cnt = 1
+	
     for step in range(num_test_samples):
-        disp = sess.run(model.disp_left_est[0])
-        disparities[step] = disp[0].squeeze()
-        disparities_pp[step] = post_process_disparity(disp.squeeze())
-
+    
+        disp, disp_right = sess.run([model.disp_left_est[0], model.disp_right_est[0]])
+        disparities[0] = disp[0].squeeze()
+        disparities_pp[0] = post_process_disparity(disp.squeeze())
+        if args.output_directory == '':
+            output_directory = os.path.dirname(args.checkpoint_path)
+        else:
+            output_directory = args.output_directory
+        np.save(output_directory + '/disparities_pp_{}.npy'.format(step), disparities_pp)
+        print('writing done : {}'.format(step))
+        #if cnt % 1000 == 0:
+            #print('writing disparities.')
+    		
+           #if args.output_directory == '':
+           #     output_directory = os.path.dirname(args.checkpoint_path)
+           # else:
+           #     output_directory = args.output_directory
+           # np.save(output_directory + '/disparities_pp_{}.npy'.format(step//1000), disparities_pp)
+          # print('writing done : {}'.format(step//1000))
+           # del(disparities)
+          #  del(disparities_pp)
+          #  disparities    = np.zeros((1000, params.height, params.width), dtype=np.float32)
+           # disparities_pp = np.zeros((1000, params.height, params.width), dtype=np.float32)
+          #  cnt = 0
+       # cnt += 1	    
     print('done.')
+    
+    #print('writing disparities.')
+    #if args.output_directory == '':
+    #    output_directory = os.path.dirname(args.checkpoint_path)
+    #else:
+    #    output_directory = args.output_directory
+    ##np.save(output_directory + '/disparities.npy',    disparities)
+   # np.save(output_directory + '/disparities_pp.npy', disparities_pp)
 
-    print('writing disparities.')
-    if args.output_directory == '':
-        output_directory = os.path.dirname(args.checkpoint_path)
-    else:
-        output_directory = args.output_directory
-    np.save(output_directory + '/disparities.npy',    disparities)
-    np.save(output_directory + '/disparities_pp.npy', disparities_pp)
 
-    print('done.')
+   # print('done.')
 
 def main(_):
 

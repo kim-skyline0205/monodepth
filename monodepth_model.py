@@ -19,7 +19,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-import functions
+
 from bilinear_sampler import *
 
 monodepth_parameters = namedtuple('parameters', 

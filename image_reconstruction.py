@@ -34,9 +34,15 @@ def _sample(im, x_offset, _height, _width, _num_channels, _height_f, _width_f):
 
 baseline = 22.
 dataset = "KITTI"
-img_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_left_image_list.txt".format(dataset))
-disp_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_stereo_mode_vgg_left_disparity_list.txt".format(dataset))
-save_dir = "/home/keti/Desktop/monodepth/result_reconstruction_image/kitti_stereo_vgg/kitti_2015_stereo/right_reconstuction_result/".format(dataset)
+#img_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_left_image_list.txt".format(dataset))
+#disp_list = open("/home/keti/Desktop/monodepth/reconstruction_txt/{}/kitti_stereo_test_resnet50_defult_kittrow_fine_city_left_disparity_list.txt".format(dataset))
+#save_dir = "/home/keti/Desktop/monodepth/result_reconstruction_image/resnet50_defult_kittrow_fine_city/kitti_2015_stereo/right_reconstuction_result/".format(dataset)
+
+##########
+img_list = open("/media/keti/4tkim/modu/DataSet/kitti_row_translation_base22/left_image_list.txt".format(dataset))
+disp_list = open("/media/keti/4tkim/modu/DataSet/kitti_row_translation_base22/pp_left_dis_list.txt".format(dataset))
+save_dir = "/media/keti/4tkim/modu/DataSet/kitti_row_translation_base22/right_image_reconstruction/".format(dataset)
+####
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 #train_filename = "/home/cvlab/data/{}/train.txt".format(dataset)
